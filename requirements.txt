@@ -3,3 +3,5 @@ psycopg_pool
 apscheduler
 fastapi
 uvicorn[standard]
+requests
+python-dotenv
