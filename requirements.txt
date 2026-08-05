@@ -1,2 +1,5 @@
 psycopg[binary]
+psycopg_pool
 apscheduler
+fastapi
+uvicorn[standard]
