@@ -8,11 +8,11 @@ CREATE TABLE stations (
     trading_name TEXT NOT NULL,
     brand_name TEXT NOT NULL,
     is_same_trading_and_brand_name BOOLEAN NOT NULL,
-    temporary_closure BOOLEAN NOT NULL,
-    permanent_closure BOOLEAN NOT NULL,
+    temporary_closure BOOLEAN,
+    permanent_closure BOOLEAN,
     permanent_closure_date DATE,
-    is_motorway_service_station BOOLEAN NOT NULL,
-    is_supermarket_service_station BOOLEAN NOT NULL,
+    is_motorway_service_station BOOLEAN,
+    is_supermarket_service_station BOOLEAN,
     address_line_1 TEXT,
     address_line_2 TEXT,
     city TEXT,
@@ -91,7 +91,7 @@ CREATE TABLE current_prices (
         REFERENCES stations(node_id)
         ON DELETE CASCADE,
     fuel_type TEXT NOT NULL,
-    price NUMERIC(6,4),
+    price NUMERIC(6,2),
     updated_at TIMESTAMPTZ,
     PRIMARY KEY (node_id, fuel_type)
 );
@@ -110,7 +110,7 @@ CREATE TABLE price_history (
         REFERENCES stations(node_id)
         ON DELETE CASCADE,
     fuel_type TEXT NOT NULL,
-    price NUMERIC(6,4) NOT NULL,
+    price NUMERIC(6,2) NOT NULL,
     changed_at TIMESTAMPTZ NOT NULL
 );
 
@@ -124,8 +124,8 @@ ON price_history (changed_at);
 -- sync state + runs
 
 CREATE TABLE sync_state (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL
+    sync_name TEXT PRIMARY KEY,
+    last_sync TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE sync_runs (
@@ -136,4 +136,12 @@ CREATE TABLE sync_runs (
     success BOOLEAN,
     records_processed INTEGER,
     error_message TEXT
+);
+
+-- job lock incase the internet is very slow/lots of data to refresh
+
+CREATE TABLE sync_lock (
+    lock_name TEXT PRIMARY KEY,
+    locked BOOLEAN NOT NULL DEFAULT FALSE,
+    locked_at TIMESTAMPTZ
 );

@@ -1,8 +1,8 @@
 import json
 import os
-
 import psycopg
 from dotenv import load_dotenv
+from datetime import datetime, timezone
 
 load_dotenv()
 
@@ -270,3 +270,89 @@ class Database:
                         node_id,
                         fuel_type
                     ))
+    
+    def get_sync_time(self, sync_name):
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                SELECT last_sync
+                FROM sync_state
+                WHERE sync_name = %s
+            """, (sync_name,))
+
+            result = cur.fetchone()
+
+            if result:
+                return result[0]
+
+            return None
+
+
+    def update_sync_time(self, sync_name):
+        now = datetime.now(timezone.utc)
+
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO sync_state
+                (
+                    sync_name,
+                    last_sync
+                )
+                VALUES
+                (%s,%s)
+                ON CONFLICT(sync_name)
+                DO UPDATE SET
+                    last_sync = EXCLUDED.last_sync
+            """, (
+                sync_name,
+                now
+            ))
+
+    def database_initialised(self):
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*)
+                FROM stations
+            """)
+
+            count = cur.fetchone()[0]
+
+            return count > 0
+
+        self.commit()
+        
+    def acquire_lock(self, name):
+        with self.conn.cursor() as cur:
+
+            cur.execute("""
+                INSERT INTO sync_lock
+                (
+                    lock_name,
+                    locked,
+                    locked_at
+                )
+                VALUES
+                (%s, TRUE, NOW())
+                ON CONFLICT(lock_name)
+                DO UPDATE SET
+                    locked = TRUE,
+                    locked_at = NOW()
+                WHERE sync_lock.locked = FALSE
+                RETURNING locked
+            """, (name,))
+
+            result = cur.fetchone()
+
+            self.commit()
+
+            return result is not None
+
+
+    def release_lock(self, name):
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                UPDATE sync_lock
+                SET locked = FALSE
+                WHERE lock_name = %s
+            """, (name,))
+
+        self.commit()
