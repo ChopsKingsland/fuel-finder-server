@@ -189,7 +189,7 @@ class Database:
             for fuel in station_prices["fuel_prices"]:
                 fuel_type = fuel["fuel_type"]
                 price = fuel["price"]
-                updated_at = fuel["price_last_updated"]
+                updated_at = fuel.get("price_change_effective_timestamp") or fuel.get("price_last_updated")
 
                 if price is None:
                     continue
