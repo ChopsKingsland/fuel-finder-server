@@ -1,5 +1,5 @@
 import requests, time
-from OAuthManager import OAuthManager
+from updater.oauth import OAuthManager
 
 class FuelFinderAPI:
     BASE_URL = "https://www.fuel-finder.service.gov.uk/api/v1"
