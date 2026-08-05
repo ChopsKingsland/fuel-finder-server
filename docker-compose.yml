@@ -14,14 +14,14 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - "8668:8668"
     env_file:
       - .env
     environment:
       - POSTGRES_HOST=postgres
     depends_on:
       - postgres
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8668
 
   updater:
     build: .

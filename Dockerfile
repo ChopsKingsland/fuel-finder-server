@@ -19,4 +19,4 @@ COPY . .
 ENV PYTHONPATH=/app
 
 # The command will be overridden in docker-compose.yml depending on the service
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8668"]
