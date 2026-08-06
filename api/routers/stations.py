@@ -89,4 +89,15 @@ def get_station_history(
         cursor.execute(query, {"node_id": node_id})
         results = cursor.fetchall()
         
-        return {"history": results}
+        formatted_history = {}
+        for row in results:
+            fuel_type = row["fuel_type"]
+            if fuel_type not in formatted_history:
+                formatted_history[fuel_type] = []
+            
+            formatted_history[fuel_type].append({
+                "price": row["price"],
+                "changed_at": row["changed_at"]
+            })
+            
+        return {"history": formatted_history}
