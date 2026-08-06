@@ -69,3 +69,24 @@ def get_nearby_stations(
             row.pop('raw_json', None)
             
         return {"stations": results}
+
+@router.get("/{node_id}/history")
+def get_station_history(
+    node_id: str,
+    db: Connection = Depends(get_db)
+):
+    query = """
+        SELECT 
+            fuel_type, 
+            price, 
+            changed_at
+        FROM price_history
+        WHERE node_id = %(node_id)s
+        ORDER BY changed_at DESC
+    """
+    
+    with db.cursor(row_factory=dict_row) as cursor:
+        cursor.execute(query, {"node_id": node_id})
+        results = cursor.fetchall()
+        
+        return {"history": results}
